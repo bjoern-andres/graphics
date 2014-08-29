@@ -33,7 +33,11 @@ public:
     Graphics();
     void clear();
     void assign(const PointPropertiesVector&, const PointsVector&, const LinePropertiesVector&, const LinesVector&);
+    void center();
+    void center(const size_type);
     void normalize();
+    void normalize(const size_type);
+    void normalize(const size_type, const size_type);
     size_type definePointProperty(const bool, const unsigned char, const unsigned char, const unsigned char);
     size_type defineLineProperty(const bool, const unsigned char, const unsigned char, const unsigned char);
     size_type definePoint(const value_type x, const value_type y, const value_type z, const size_type = 0);
@@ -95,8 +99,8 @@ Graphics<T, S>::assign(
 
 template<class T, class S>
 inline void
-Graphics<T, S>::normalize() {
-    // calculate min max and mean vector
+Graphics<T, S>::center() {
+    // calculate center
     value_type vectorMin[3] = {
         std::numeric_limits<float>::infinity(),
         std::numeric_limits<float>::infinity(),
@@ -123,24 +127,118 @@ Graphics<T, S>::normalize() {
         vectorMean[k] = (vectorMin[k] + vectorMax[k]) / 2.0f;
     }
 
-    // calculate scale
-    float scale = 1.0f;
-    {
-        float v[3] = {0.0f, 0.0f, 0.0f};
-        for(size_type k = 0; k < 3; ++k) {
-            v[k] = vectorMax[k] - vectorMean[k];
-        }
-        scale = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-        if(scale == 0.0f) {
-            scale = 1.0f;
-        }
-    }
-
-    // translate and scale
+    // center
     for(size_type j = 0; j < numberOfPoints(); ++j) {
         for(size_type k = 0; k < 3; ++k) {
             points_[j][k] -= vectorMean[k];
+        }
+    }
+}
+
+template<class T, class S>
+inline void
+Graphics<T, S>::center(
+    const size_type k
+) {
+    assert(k < 3);
+
+    // calculate center
+    value_type minimum = std::numeric_limits<float>::infinity();
+    value_type maximum = -std::numeric_limits<float>::infinity();
+    for(size_type j = 0; j < numberOfPoints(); ++j) {
+        if(points_[j][k] < minimum) {
+            minimum = points_[j][k];
+        }
+        if(points_[j][k] > maximum) {
+            maximum = points_[j][k];
+        }
+    }
+    const value_type mean = (minimum + maximum) / 2.0f;
+
+    // center
+    for(size_type j = 0; j < numberOfPoints(); ++j) {
+        points_[j][k] -= mean;
+    }
+
+}
+
+template<class T, class S>
+inline void
+Graphics<T, S>::normalize() {
+    // determine scale
+    value_type scale = 0.0f;
+    for(size_type j = 0; j < numberOfPoints(); ++j) {
+        value_type scalePoint = 0.0f;
+        for(size_type k = 0; k < 3; ++k) {
+            scalePoint += points_[j][k] * points_[j][k];
+        }
+        if(scalePoint > scale) {
+            scale = scalePoint;
+        }
+    }
+
+    // scale
+    if(scale != 0.0f) {
+        scale = std::sqrt(scale);
+        for(size_type j = 0; j < numberOfPoints(); ++j) {
+            for(size_type k = 0; k < 3; ++k) {
+                points_[j][k] /= scale;
+            }
+        }
+    }
+}
+
+template<class T, class S>
+inline void
+Graphics<T, S>::normalize(
+    const size_type k
+) {
+    assert(k < 3);
+
+    // calculate scale
+    value_type scale = 0.0f;
+    for(size_type j = 0; j < numberOfPoints(); ++j) {
+        value_type scalePoint = std::abs(points_[j][k]);
+        if(scalePoint > scale) {
+            scale = scalePoint;
+        }
+    }
+
+    // scale
+    if(scale != 0.0f) {
+        for(size_type j = 0; j < numberOfPoints(); ++j) {
             points_[j][k] /= scale;
+        }
+    }
+}
+
+template<class T, class S>
+inline void
+Graphics<T, S>::normalize(
+    const size_type k,
+    const size_type l
+) {
+    assert(k < 3);
+    assert(l < 3);
+    assert(k != l);
+
+    // determine scale
+    value_type scale = 0.0f;
+    for(size_type j = 0; j < numberOfPoints(); ++j) {
+        value_type scalePoint = 0.0f;
+        scalePoint += points_[j][k] * points_[j][k];
+        scalePoint += points_[j][l] * points_[j][l];
+        if(scalePoint > scale) {
+            scale = scalePoint;
+        }
+    }
+
+    // scale
+    if(scale != 0.0f) {
+        scale = std::sqrt(scale);
+        for(size_type j = 0; j < numberOfPoints(); ++j) {
+            points_[j][k] /= scale;
+            points_[j][l] /= scale;
         }
     }
 }

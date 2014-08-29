@@ -127,8 +127,8 @@ int main(int argc, char** argv) {
         andres::hdf5::closeFile(file);
     }
 
-    // normalize graphics
-    graphics.normalize();
+    graphics.center();
+    // graphics.normalize();
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
