@@ -14,6 +14,14 @@ typedef Graphics::LinePropertyType LineProperty;
 
 Graphics graphics;
 
+float pointSize = 5.0f;
+float lineWidth = 1.0f;
+unsigned char colorHorizon[] = {200, 200, 200};
+bool showPoints = true;
+bool showLines = true;
+bool showAxes = true;
+bool showHorizon = true;
+
 void init() {
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 }
@@ -21,8 +29,22 @@ void init() {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // draw axes
-    {
+    glLineWidth(1.0f);
+
+    if(showHorizon) {
+        glColor3ub(colorHorizon[0], colorHorizon[1], colorHorizon[2]);
+        glBegin(GL_LINES);
+            for(float r = -1.0f; r < 1.1f; r += 0.1f) {
+                glVertex3f(r, -1.0f, 0.0f);
+                glVertex3f(r, 1.0f, 0.0f);
+
+                glVertex3f(-1.0f, r, 0.0f);
+                glVertex3f(1.0f, r, 0.0f);
+            }
+        glEnd();
+    }
+
+    if(showAxes) {
         const float lengthAxis = 1.0f;
         glBegin(GL_LINES);
             glColor3ub(255, 0, 0);
@@ -39,30 +61,37 @@ void display() {
         glEnd();
     }
 
-    glBegin(GL_POINTS);
-        for(size_type j = 0; j < graphics.numberOfPoints(); ++j) {
-            const Point& point = graphics.point(j);
-            const PointProperty& pointProperty = graphics.pointProperty(point.propertyIndex());
-            if(pointProperty.visibility()) {
-                glColor3ub(pointProperty.color(0), pointProperty.color(1), pointProperty.color(2));
-                glVertex3f(point[0], point[1], point[2]);
-            }
-        }
-    glEnd();
-
-    glBegin(GL_LINES);
-        for(size_type j = 0; j < graphics.numberOfLines(); ++j) {
-            const Line& line = graphics.line(j);
-            const LineProperty& lineProperty = graphics.lineProperty(line.propertyIndex());
-            if(lineProperty.visibility()) {
-                glColor3ub(lineProperty.color(0), lineProperty.color(1), lineProperty.color(2));
-                for(size_type k = 0; k < 2; ++k) {
-                    const Point& point = graphics.point(line.pointIndex(k));
+    if(showPoints) {
+        glPointSize(pointSize);
+        glBegin(GL_POINTS);
+            for(size_type j = 0; j < graphics.numberOfPoints(); ++j) {
+                const Point& point = graphics.point(j);
+                const PointProperty& pointProperty = graphics.pointProperty(point.propertyIndex());
+                if(pointProperty.visibility()) {
+                    glColor3ub(pointProperty.color(0), pointProperty.color(1), pointProperty.color(2));
                     glVertex3f(point[0], point[1], point[2]);
                 }
             }
-        }
-    glEnd();
+        glEnd();
+    }
+
+    if(showLines) {
+        glLineWidth(lineWidth);
+        glBegin(GL_LINES);
+            for(size_type j = 0; j < graphics.numberOfLines(); ++j) {
+                const Line& line = graphics.line(j);
+                const LineProperty& lineProperty = graphics.lineProperty(line.propertyIndex());
+                if(lineProperty.visibility()) {
+                    glColor3ub(lineProperty.color(0), lineProperty.color(1), lineProperty.color(2));
+                    for(size_type k = 0; k < 2; ++k) {
+                        const Point& point = graphics.point(line.pointIndex(k));
+                        glVertex3f(point[0], point[1], point[2]);
+                    }
+                }
+            }
+        glEnd();
+    }
+
     glutSwapBuffers();
 }
 
@@ -72,30 +101,33 @@ void keyboard(unsigned char key, int x, int y) {
     const float scaleDownStep = 1.0f / scaleUpStep;
 
     switch(key) {
-    case '2': // x left
+    case '2': // roate left around x axis
         glRotatef(-angleStep, 1.0f, 0.0f, 0.0f);
         glutPostRedisplay();
         break;
-    case '8': // x right
+    case '8': // roate rightaround x axis
         glRotatef(angleStep, 1.0f, 0.0f, 0.0f);
         glutPostRedisplay();
         break;
-    case '4': // y left
+
+    case '4': // roate left around y axis
         glRotatef(-angleStep, 0.0f, 1.0f, 0.0f);
         glutPostRedisplay();
         break;
-    case '6': // y right
+    case '6': // roate right around y axis
         glRotatef(angleStep, 0.0f, 1.0f, 0.0f);
         glutPostRedisplay();
         break;
-    case '1': // z left
+
+    case '1': // roate left around z axis
         glRotatef(-angleStep, 0.0f, 0.0f, 1.0f);
         glutPostRedisplay();
         break;
-    case '3': // z right
+    case '3': // roate right around z axis
         glRotatef(angleStep, 0.0f, 0.0f, 1.0f);
         glutPostRedisplay();
         break;
+
     case '+': // scale up
         glScalef(scaleUpStep, scaleUpStep, scaleUpStep);
         glutPostRedisplay();
@@ -104,9 +136,48 @@ void keyboard(unsigned char key, int x, int y) {
         glScalef(scaleDownStep, scaleDownStep, scaleDownStep);
         glutPostRedisplay();
         break;
-    case 27: // escape
+
+    case 'q': // increase point size
+        showPoints = true;
+        pointSize += 1.0f;
+        glutPostRedisplay();
+        break;
+    case 'a':// decrease point size
+        pointSize -= 1.0f;
+        if(pointSize < 1.0f) {
+            showPoints = false;
+            pointSize = 0.0f;
+        }
+        glutPostRedisplay();
+        break;
+
+    case 'w': // increase line width
+        showLines = true;
+        lineWidth += 1.0f;
+        glutPostRedisplay();
+        break;
+    case 's':// decrease line width
+        lineWidth -= 1.0f;
+        if(lineWidth < 1.0f) {
+            showLines = false;
+            lineWidth = 0.0f;
+        }
+        glutPostRedisplay();
+        break;
+
+    case 'r': // enable/disable drawing of axes
+        showAxes = !showAxes;
+        glutPostRedisplay();
+        break;
+    case 't': // enable/disable drawing of horizon
+        showHorizon = !showHorizon;
+        glutPostRedisplay();
+        break;
+
+    case 27: // (escape key) quit
         exit(0);
         break;
+
     default:
         break;
     }
