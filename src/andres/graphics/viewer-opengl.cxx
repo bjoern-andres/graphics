@@ -23,6 +23,9 @@ bool showAxes = true;
 bool showHorizon = true;
 
 void init() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 }
 
@@ -68,7 +71,7 @@ void display() {
                 const Point& point = graphics.point(j);
                 const PointProperty& pointProperty = graphics.pointProperty(point.propertyIndex());
                 if(pointProperty.visibility()) {
-                    glColor3ub(pointProperty.color(0), pointProperty.color(1), pointProperty.color(2));
+                    glColor4ub(pointProperty.color(0), pointProperty.color(1), pointProperty.color(2), pointProperty.alpha());
                     glVertex3f(point[0], point[1], point[2]);
                 }
             }
@@ -82,7 +85,7 @@ void display() {
                 const Line& line = graphics.line(j);
                 const LineProperty& lineProperty = graphics.lineProperty(line.propertyIndex());
                 if(lineProperty.visibility()) {
-                    glColor3ub(lineProperty.color(0), lineProperty.color(1), lineProperty.color(2));
+                    glColor4ub(lineProperty.color(0), lineProperty.color(1), lineProperty.color(2), lineProperty.alpha());
                     for(size_type k = 0; k < 2; ++k) {
                         const Point& point = graphics.point(line.pointIndex(k));
                         glVertex3f(point[0], point[1], point[2]);

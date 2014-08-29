@@ -38,8 +38,8 @@ public:
     void normalize();
     void normalize(const size_type);
     void normalize(const size_type, const size_type);
-    size_type definePointProperty(const bool, const unsigned char, const unsigned char, const unsigned char);
-    size_type defineLineProperty(const bool, const unsigned char, const unsigned char, const unsigned char);
+    size_type definePointProperty(const bool, const unsigned char, const unsigned char, const unsigned char, const unsigned char = 255);
+    size_type defineLineProperty(const bool, const unsigned char, const unsigned char, const unsigned char, const unsigned char = 255);
     size_type definePoint(const value_type x, const value_type y, const value_type z, const size_type = 0);
     size_type defineLine(const size_type, const size_type, const size_type = 0);
 
@@ -249,9 +249,10 @@ Graphics<T, S>::definePointProperty(
     const bool visibility,
     const unsigned char r,
     const unsigned char g,
-    const unsigned char b
+    const unsigned char b,
+    const unsigned char alpha
 ) {
-    pointProperties_.push_back(PointPropertyType(visibility, r, g, b));
+    pointProperties_.push_back(PointPropertyType(visibility, r, g, b, alpha));
     return pointProperties_.size() - 1; // index of the point property just added
 }
 
@@ -261,9 +262,10 @@ Graphics<T, S>::defineLineProperty(
     const bool visibility,
     const unsigned char r,
     const unsigned char g,
-    const unsigned char b
+    const unsigned char b,
+    const unsigned char alpha
 ) {
-    lineProperties_.push_back(LinePropertyType(visibility, r, g, b));
+    lineProperties_.push_back(LinePropertyType(visibility, r, g, b, alpha));
     return lineProperties_.size() - 1; // index of the line property just added
 }
 

@@ -55,29 +55,36 @@ public:
     typedef S size_type;
 
     PointProperty(const Bit visibility = true)
-        : PointProperty(visibility, 0, 0, 0)
+        : PointProperty(visibility, 0, 0, 0, 255)
         {}
-    PointProperty(const Bit visibility, const Color r, const Color g, const Color b)
+    PointProperty(const Bit visibility, const Color r, const Color g, const Color b, const Color alpha)
         :   visibility_(visibility)
-        { color_[0] = r; color_[1] = g; color_[2] = b; }
+        { color_[0] = r; color_[1] = g; color_[2] = b; alpha_ = alpha; }
+    Bit& visibility()
+        { return visibility_; }
     Color& color(const size_type j)
         { assert(j < 3); return color_[j]; }
-    Bit& visibility()
+    Color& alpha()
+        { return alpha_; }
+
+    Bit visibility() const
         { return visibility_; }
     Color color(const size_type j) const
         { assert(j < 3); return color_[j]; }
-    Bit visibility() const
-        { return visibility_; }
+    Color alpha() const
+        { return alpha_; }
     bool operator==(const PointProperty<T, S>& other) const
         { return visibility_ == other.visibility_
             && color_[0] == other.color_[0]
             && color_[1] == other.color_[1]
-            && color_[2] == other.color_[2];
+            && color_[2] == other.color_[2]
+            && alpha_ == other.alpha_;
         }
 
 private:
     Bit visibility_;
     Color color_[3];
+    Color alpha_;
 
 friend class andres::hdf5::HDF5Type<PointProperty<T, S> >;
 };

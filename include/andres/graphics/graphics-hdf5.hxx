@@ -18,7 +18,8 @@ public:
     HDF5Type()
         : type_(H5Tcreate(H5T_COMPOUND, sizeof(PointPropertyType)))
         { H5Tinsert(type_, "visibility", HOFFSET(PointPropertyType, visibility_), HDF5Type<andres::graphics::Bit>().type());
-          H5Tinsert(type_, "color", HOFFSET(PointPropertyType, color_), HDF5Type<andres::graphics::Color>().type()); }
+          H5Tinsert(type_, "color", HOFFSET(PointPropertyType, color_), HDF5Type<andres::graphics::Color>().type());
+          H5Tinsert(type_, "alpha", HOFFSET(PointPropertyType, alpha_), HDF5Type<andres::graphics::Color>().type()); }
     ~HDF5Type()
         { H5Tclose(type_); }
     hid_t type() const
@@ -58,7 +59,8 @@ public:
     HDF5Type()
         : type_(H5Tcreate(H5T_COMPOUND, sizeof(LinePropertyType)))
         { H5Tinsert(type_, "visibility", HOFFSET(LinePropertyType, visibility_), HDF5Type<andres::graphics::Bit>().type());
-          H5Tinsert(type_, "color", HOFFSET(LinePropertyType, color_), HDF5Type<andres::graphics::Color>().type()); }
+          H5Tinsert(type_, "color", HOFFSET(LinePropertyType, color_), HDF5Type<andres::graphics::Color>().type());
+          H5Tinsert(type_, "alpha", HOFFSET(LinePropertyType, alpha_), HDF5Type<andres::graphics::Color>().type()); }
     ~HDF5Type()
         { H5Tclose(type_); }
     hid_t type() const
