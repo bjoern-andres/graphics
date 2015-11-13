@@ -1,9 +1,13 @@
 #include <cstddef>
+#include <fstream>
 
 #include <andres/graphics/graphics-hdf5.hxx>
+#include <andres/graphics/svg.hxx>
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+
+
 
 typedef std::size_t size_type;
 typedef andres::graphics::Graphics<float, size_type> Graphics;
@@ -24,13 +28,16 @@ bool showHorizon = true;
 
 void init() {
     glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glShadeModel(GL_SMOOTH);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 }
 
 void display() {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLineWidth(1.0f);
 
@@ -98,6 +105,56 @@ void display() {
     glutSwapBuffers();
 }
 
+struct Projection
+{
+    typedef float value_type;
+    typedef size_t size_type;
+
+    Projection(GLfloat const* m, float off_x, float off_y, float scale = 1.0)
+        : m_(m), off_x_(off_x), off_y_(off_y), scale_(scale)
+    { }
+
+    void operator()(value_type a, value_type b, value_type c, value_type& x, value_type& y) const
+    {
+        x = (m_[0]*a + m_[4]*b + m_[8]*c)*scale_ + off_x_;
+        y = -(m_[1]*a + m_[5]*b + m_[9]*c)*scale_ + off_y_;
+    }
+
+private:
+    GLfloat const* m_;
+    float off_x_;
+    float off_y_;
+    float scale_;
+};
+
+void saveScreenshot()
+{
+    std::ofstream f("screenshot.svg");
+
+    GLfloat m[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, m);
+
+    Projection projection(m, 0, 0);
+    
+    float t[2] = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
+    for(size_type j = 0; j < graphics.numberOfPoints(); ++j)
+    {
+        const auto& point = graphics.point(j);
+        auto x = .0f;
+        auto y = .0f;
+        projection(point[0], point[1], point[2], x, y);
+
+        t[0] = std::min(t[0], x);
+        t[1] = std::min(t[1], y);
+    }
+    auto scale = 400.0;
+    projection = Projection(m, -t[0]*scale, -t[1]*scale, scale);
+
+    saveSVG(graphics, projection, f);
+
+    f.close();
+}
+
 void keyboard(unsigned char key, int x, int y) {
     const float angleStep = 3.0f;
     const float scaleUpStep = 1.1f;
@@ -108,7 +165,7 @@ void keyboard(unsigned char key, int x, int y) {
         glRotatef(-angleStep, 1.0f, 0.0f, 0.0f);
         glutPostRedisplay();
         break;
-    case '8': // roate rightaround x axis
+    case '8': // roate right around x axis
         glRotatef(angleStep, 1.0f, 0.0f, 0.0f);
         glutPostRedisplay();
         break;
@@ -177,6 +234,10 @@ void keyboard(unsigned char key, int x, int y) {
         glutPostRedisplay();
         break;
 
+    case 'p': // make a screenshot
+        saveScreenshot();
+        break;
+
     case 27: // (escape key) quit
         exit(0);
         break;
@@ -202,7 +263,24 @@ int main(int argc, char** argv) {
     }
 
     graphics.center();
-    // graphics.normalize();
+    graphics.normalize();
+
+    std::cout << "Shortcuts:\n";
+    std::cout << "  '2' to rotate left around x axis\n";
+    std::cout << "  '8' to rotate right around x axis\n";
+    std::cout << "  '4' to rotate left around y axis\n";
+    std::cout << "  '6' to rotate right around y axis\n";
+    std::cout << "  '1' to rotate left around z axis\n";
+    std::cout << "  '3' to rotate right around z axis\n";
+    std::cout << "  '+' to zoom in\n";
+    std::cout << "  '-' to zoom out\n";
+    std::cout << "  'q' to increase point size\n";
+    std::cout << "  'a' to decrease point size\n";
+    std::cout << "  'w' to increase line width\n";
+    std::cout << "  's' to decrease line width\n";
+    std::cout << "  'r' to enable/disable drawing of axes\n";
+    std::cout << "  't' to enable/disable drawing of horizon\n";
+    std::cout << "  'p' to save the graph into an svg-file\n";
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
