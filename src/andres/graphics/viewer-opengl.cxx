@@ -7,8 +7,6 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-
-
 typedef std::size_t size_type;
 typedef andres::graphics::Graphics<float, size_type> Graphics;
 typedef Graphics::PointType Point;
@@ -32,7 +30,6 @@ void init() {
     glDepthFunc(GL_LESS);
     glShadeModel(GL_SMOOTH);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 }
 
@@ -127,18 +124,14 @@ private:
     float scale_;
 };
 
-void saveScreenshot()
-{
-    std::ofstream f("screenshot.svg");
-
+void exportViewAsSVG() {
     GLfloat m[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, m);
 
-    Projection projection(m, 0, 0);
-    
+    Projection projection(m, 0, 0);   
+
     float t[2] = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
-    for(size_type j = 0; j < graphics.numberOfPoints(); ++j)
-    {
+    for(size_type j = 0; j < graphics.numberOfPoints(); ++j) {
         const auto& point = graphics.point(j);
         auto x = .0f;
         auto y = .0f;
@@ -150,8 +143,8 @@ void saveScreenshot()
     auto scale = 400.0;
     projection = Projection(m, -t[0]*scale, -t[1]*scale, scale);
 
+    std::ofstream f("view.svg");
     saveSVG(graphics, projection, f);
-
     f.close();
 }
 
@@ -235,7 +228,7 @@ void keyboard(unsigned char key, int x, int y) {
         break;
 
     case 'p': // make a screenshot
-        saveScreenshot();
+        exportViewAsSVG();
         break;
 
     case 27: // (escape key) quit
@@ -265,22 +258,23 @@ int main(int argc, char** argv) {
     graphics.center();
     graphics.normalize();
 
-    std::cout << "Shortcuts:\n";
-    std::cout << "  '2' to rotate left around x axis\n";
-    std::cout << "  '8' to rotate right around x axis\n";
-    std::cout << "  '4' to rotate left around y axis\n";
-    std::cout << "  '6' to rotate right around y axis\n";
-    std::cout << "  '1' to rotate left around z axis\n";
-    std::cout << "  '3' to rotate right around z axis\n";
-    std::cout << "  '+' to zoom in\n";
-    std::cout << "  '-' to zoom out\n";
-    std::cout << "  'q' to increase point size\n";
-    std::cout << "  'a' to decrease point size\n";
-    std::cout << "  'w' to increase line width\n";
-    std::cout << "  's' to decrease line width\n";
-    std::cout << "  'r' to enable/disable drawing of axes\n";
-    std::cout << "  't' to enable/disable drawing of horizon\n";
-    std::cout << "  'p' to save the graph into an svg-file\n";
+    std::cout << "Keys and functions:" << std::endl
+        << "   2    rotate left around x axis" << std::endl
+        << "   8    rotate right around x axis" << std::endl
+        << "   4    rotate left around y axis" << std::endl
+        << "   6    rotate right around y axis" << std::endl
+        << "   1    rotate left around z axis" << std::endl
+        << "   3    rotate right around z axis" << std::endl
+        << "   +    zoom in" << std::endl
+        << "   -    zoom out" << std::endl
+        << "   q    increase point size" << std::endl
+        << "   a    decrease point size" << std::endl
+        << "   w    increase line width" << std::endl
+        << "   s    decrease line width" << std::endl
+        << "   r    enable/disable drawing of axes" << std::endl
+        << "   t    enable/disable drawing of horizon" << std::endl
+        << "   p    export current view as SVG file 'view.svg'"
+        << std::endl;
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
