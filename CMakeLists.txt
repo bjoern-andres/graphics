@@ -4,8 +4,8 @@ include_directories(include)
 file(GLOB headers
     cmake/modules/*
     include/andres/*.hxx
-    include/andres/hdf5/*.hxx
     include/andres/graphics/*.hxx
+    include/andres/graphics/hdf5/*.hxx
 )
 enable_testing()
 

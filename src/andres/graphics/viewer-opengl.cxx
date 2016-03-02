@@ -250,9 +250,9 @@ int main(int argc, char** argv) {
 
     // load graphics from file
     {
-        hid_t file = andres::hdf5::openFile(fileName);
-        andres::hdf5::load(file, graphics);
-        andres::hdf5::closeFile(file);
+        hid_t file = andres::graphics::hdf5::openFile(fileName);
+        andres::graphics::hdf5::load(file, graphics);
+        andres::graphics::hdf5::closeFile(file);
     }
 
     graphics.center();

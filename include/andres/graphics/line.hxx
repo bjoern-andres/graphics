@@ -7,12 +7,11 @@
 #include "types.hxx"
 
 namespace andres {
+namespace graphics {
 
 namespace hdf5 {
     template<class T> class HDF5Type;
 }
-
-namespace graphics {
 
 template<class T = float, class S = std::size_t>
 class Line {
@@ -44,7 +43,7 @@ private:
     size_type pointIndices_[2];
     size_type propertyIndex_;
 
-friend class andres::hdf5::HDF5Type<Line<T, S> >;
+friend class hdf5::HDF5Type<Line<T, S> >;
 };
 
 template<class T = float, class S = std::size_t>
@@ -85,7 +84,7 @@ private:
     Color color_[3];
     Color alpha_;
 
-friend class andres::hdf5::HDF5Type<LineProperty<T, S> >;
+friend class hdf5::HDF5Type<LineProperty<T, S> >;
 };
 
 } // namespace graphics

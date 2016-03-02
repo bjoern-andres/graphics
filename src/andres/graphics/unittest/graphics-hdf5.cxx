@@ -43,17 +43,17 @@ int main() {
         graphics.defineLine(4, 5);
         graphics.defineLine(6, 7);
 
-        hid_t file = andres::hdf5::createFile("graphics.h5");
-        andres::hdf5::save(file, graphics);
-        andres::hdf5::closeFile(file);
+        hid_t file = andres::graphics::hdf5::createFile("graphics.h5");
+        andres::graphics::hdf5::save(file, graphics);
+        andres::graphics::hdf5::closeFile(file);
     }
 
     // load graphics
     Graphics graphicsLoaded;
     {
-        hid_t file = andres::hdf5::openFile("graphics.h5");
-        andres::hdf5::load(file, graphicsLoaded);
-        andres::hdf5::closeFile(file);
+        hid_t file = andres::graphics::hdf5::openFile("graphics.h5");
+        andres::graphics::hdf5::load(file, graphicsLoaded);
+        andres::graphics::hdf5::closeFile(file);
     }
 
     // test equality of graphics
