@@ -358,12 +358,23 @@ save(
     const hid_t parentHandle,
     const andres::graphics::Graphics<T, S>& graphics
 ) {
+    std::vector<size_t> numbers(3);
+    numbers[0] = graphics.numberOfPoints();
+    numbers[1] = graphics.numberOfLines();
+    numbers[2] = graphics.numberOfTriangles();
+    save(parentHandle, "numbers", numbers);
     save(parentHandle, "point-properties", graphics.pointProperties());
-    save(parentHandle, "points", graphics.points());
+    if(graphics.numberOfPoints() != 0) {
+        save(parentHandle, "points", graphics.points());
+    }
     save(parentHandle, "line-properties", graphics.lineProperties());
-    save(parentHandle, "lines", graphics.lines());
+    if(graphics.numberOfLines() != 0) {
+        save(parentHandle, "lines", graphics.lines());
+    }
     save(parentHandle, "triangle-properties", graphics.triangleProperties());
-    save(parentHandle, "triangles", graphics.triangles());
+    if(graphics.numberOfTriangles() != 0) {
+        save(parentHandle, "triangles", graphics.triangles());
+    }
 }
 
 template<class T, class S>
@@ -390,12 +401,20 @@ load(
     TrianglePropertiesVector triangleProperties;
     TrianglesVector triangles;
 
+    std::vector<size_t> numbers(3);
+    load(parentHandle, "numbers", numbers);
     load(parentHandle, "point-properties", pointProperties);
-    load(parentHandle, "points", points);
+    if(numbers[0] != 0) {
+        load(parentHandle, "points", points);
+    }
     load(parentHandle, "line-properties", lineProperties);
-    load(parentHandle, "lines", lines);
+    if(numbers[1] != 0) {
+        load(parentHandle, "lines", lines);
+    }
     load(parentHandle, "triangle-properties", triangleProperties);
-    load(parentHandle, "triangles", triangles);
+    if(numbers[2] != 0) {
+        load(parentHandle, "triangles", triangles);
+    }
 
     graphics.assign(pointProperties, points,
         lineProperties, lines,
