@@ -26,11 +26,11 @@ int main() {
             graphics.definePoint(1, 1, 0, pointProperty);
             graphics.definePoint(1, 1, 1, pointProperty);
         }
+
         graphics.defineLine(0, 4);
         graphics.defineLine(1, 5);
         graphics.defineLine(2, 6);
         graphics.defineLine(3, 7);
-
         {
             const size_type lineProperty = graphics.defineLineProperty(true, 0, 255, 0);
             graphics.defineLine(0, 2, lineProperty);
@@ -42,6 +42,12 @@ int main() {
         graphics.defineLine(2, 3);
         graphics.defineLine(4, 5);
         graphics.defineLine(6, 7);
+
+        graphics.defineTriangle(0, 1, 2);
+        {
+            const size_type triangleProperty = graphics.defineTriangleProperty(true, 0, 255, 0, 127);
+            graphics.defineTriangle(2, 3, 4, triangleProperty);
+        }
 
         hid_t file = andres::graphics::hdf5::createFile("graphics.h5");
         andres::graphics::hdf5::save(file, graphics);

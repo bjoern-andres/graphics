@@ -12,6 +12,7 @@
 
 #include "point.hxx"
 #include "line.hxx"
+#include "triangle.hxx"
 
 namespace andres {
 namespace graphics {
@@ -25,14 +26,20 @@ public:
     typedef PointProperty<value_type, size_type> PointPropertyType;
     typedef Line<value_type, size_type> LineType;
     typedef LineProperty<value_type, size_type> LinePropertyType;
+    typedef Triangle<value_type, size_type> TriangleType;
+    typedef TriangleProperty<value_type, size_type> TrianglePropertyType;
     typedef std::vector<PointType> PointsVector;
     typedef std::vector<PointPropertyType> PointPropertiesVector;
     typedef std::vector<LineType> LinesVector;
     typedef std::vector<LinePropertyType> LinePropertiesVector;
+    typedef std::vector<TriangleType> TrianglesVector;
+    typedef std::vector<TrianglePropertyType> TrianglePropertiesVector;
 
     Graphics();
     void clear();
-    void assign(const PointPropertiesVector&, const PointsVector&, const LinePropertiesVector&, const LinesVector&);
+    void assign(const PointPropertiesVector&, const PointsVector&,
+        const LinePropertiesVector&, const LinesVector&,
+        const TrianglePropertiesVector&, const TrianglesVector&);
     void center();
     void center(const size_type);
     void normalize();
@@ -40,27 +47,37 @@ public:
     void normalize(const size_type, const size_type);
     size_type definePointProperty(const bool, const unsigned char, const unsigned char, const unsigned char, const unsigned char = 255);
     size_type defineLineProperty(const bool, const unsigned char, const unsigned char, const unsigned char, const unsigned char = 255);
+    size_type defineTriangleProperty(const bool, const unsigned char, const unsigned char, const unsigned char, const unsigned char = 255);
     size_type definePoint(const value_type x, const value_type y, const value_type z, const size_type = 0);
     size_type defineLine(const size_type, const size_type, const size_type = 0);
+    size_type defineTriangle(const size_type, const size_type, const size_type, const size_type = 0);
 
     const size_type numberOfPoints() const;
     const size_type numberOfLines() const;
+    const size_type numberOfTriangles() const;
     const size_type numberOfPointProperties() const;
     const size_type numberOfLineProperties() const;
+    const size_type numberOfTriangleProperties() const;
     const PointType& point(const size_type) const;
     const LineType& line(const size_type) const;
+    const TriangleType& triangle(const size_type) const;
     const PointPropertyType& pointProperty(const size_type) const;
     const LinePropertyType& lineProperty(const size_type) const;
+    const TrianglePropertyType& triangleProperty(const size_type) const;
     const PointsVector& points() const;
     const LinesVector& lines() const;
+    const TrianglesVector& triangles() const;
     const PointPropertiesVector& pointProperties() const;
     const LinePropertiesVector& lineProperties() const;
+    const TrianglePropertiesVector& triangleProperties() const;
 
 private:
     PointsVector points_;
     LinesVector lines_;
+    TrianglesVector triangles_;
     PointPropertiesVector pointProperties_;
     LinePropertiesVector lineProperties_;
+    TrianglePropertiesVector triangleProperties_;
 };
 
 template<class T, class S>
@@ -68,8 +85,10 @@ inline
 Graphics<T, S>::Graphics()
 :   points_(),
     lines_(),
+    triangles_(),
     pointProperties_(1), // default point property
-    lineProperties_(1) // default line property
+    lineProperties_(1), // default line property
+    triangleProperties_(1) // default triangle property
 {}
 
 template<class T, class S>
@@ -87,7 +106,9 @@ Graphics<T, S>::assign(
     const PointPropertiesVector& pointProperties,
     const PointsVector& points,
     const LinePropertiesVector& lineProperties,
-    const LinesVector& lines
+    const LinesVector& lines,
+    const TrianglePropertiesVector& triangleProperties,
+    const TrianglesVector& triangles
 ) {
     // TODO: sanity check input
 
@@ -95,6 +116,8 @@ Graphics<T, S>::assign(
     points_ = points;
     lineProperties_ = lineProperties;
     lines_ = lines;
+    triangleProperties_ = triangleProperties;
+    triangles_ = triangles;
 }
 
 template<class T, class S>
@@ -271,6 +294,19 @@ Graphics<T, S>::defineLineProperty(
 
 template<class T, class S>
 inline typename Graphics<T, S>::size_type
+Graphics<T, S>::defineTriangleProperty(
+    const bool visibility,
+    const unsigned char r,
+    const unsigned char g,
+    const unsigned char b,
+    const unsigned char alpha
+) {
+    triangleProperties_.push_back(TrianglePropertyType(visibility, r, g, b, alpha));
+    return triangleProperties_.size() - 1; // index of the triangle property just added
+}
+
+template<class T, class S>
+inline typename Graphics<T, S>::size_type
 Graphics<T, S>::definePoint(
     const value_type x,
     const value_type y,
@@ -301,7 +337,32 @@ Graphics<T, S>::defineLine(
         throw std::out_of_range("line property index out of range");
     }
     lines_.push_back(LineType(pointIndex0, pointIndex1, propertyIndex));
-    return lines_.size() - 1; // index of the point just added
+    return lines_.size() - 1; // index of the line just added
+}
+
+
+template<class T, class S>
+inline typename Graphics<T, S>::size_type
+Graphics<T, S>::defineTriangle(
+    const size_type pointIndex0,
+    const size_type pointIndex1,
+    const size_type pointIndex2,
+    const size_type propertyIndex
+) {
+    if(pointIndex0 >= points_.size()) {
+        throw std::out_of_range("point index 0 out of range");
+    }
+    if(pointIndex1 >= points_.size()) {
+        throw std::out_of_range("point index 1 out of range");
+    }
+    if(pointIndex2 >= points_.size()) {
+        throw std::out_of_range("point index 2 out of range");
+    }
+    if(propertyIndex >= triangleProperties_.size()) {
+        throw std::out_of_range("triangle property index out of range");
+    }
+    triangles_.push_back(TriangleType(pointIndex0, pointIndex1, pointIndex2, propertyIndex));
+    return triangles_.size() - 1; // index of the triangle just added
 }
 
 template<class T, class S>
@@ -321,6 +382,14 @@ Graphics<T, S>::line(
 }
 
 template<class T, class S>
+inline const typename Graphics<T, S>::TriangleType&
+Graphics<T, S>::triangle(
+    const size_type index
+) const {
+    return triangles_[index];
+}
+
+template<class T, class S>
 inline const typename Graphics<T, S>::PointPropertyType&
 Graphics<T, S>::pointProperty(
     const size_type index
@@ -337,6 +406,14 @@ Graphics<T, S>::lineProperty(
 }
 
 template<class T, class S>
+inline const typename Graphics<T, S>::TrianglePropertyType&
+Graphics<T, S>::triangleProperty(
+    const size_type index
+) const {
+    return triangleProperties_[index];
+}
+
+template<class T, class S>
 inline const typename Graphics<T, S>::size_type
 Graphics<T, S>::numberOfPoints() const {
     return points_.size();
@@ -346,6 +423,12 @@ template<class T, class S>
 inline const typename Graphics<T, S>::size_type
 Graphics<T, S>::numberOfLines() const {
     return lines_.size();
+}
+
+template<class T, class S>
+inline const typename Graphics<T, S>::size_type
+Graphics<T, S>::numberOfTriangles() const {
+    return triangles_.size();
 }
 
 template<class T, class S>
@@ -361,6 +444,12 @@ Graphics<T, S>::numberOfLineProperties() const {
 }
 
 template<class T, class S>
+inline const typename Graphics<T, S>::size_type
+Graphics<T, S>::numberOfTriangleProperties() const {
+    return triangleProperties_.size();
+}
+
+template<class T, class S>
 inline const typename Graphics<T, S>::PointsVector&
 Graphics<T, S>::points() const {
     return points_;
@@ -373,6 +462,12 @@ Graphics<T, S>::lines() const {
 }
 
 template<class T, class S>
+inline const typename Graphics<T, S>::TrianglesVector&
+Graphics<T, S>::triangles() const {
+    return triangles_;
+}
+
+template<class T, class S>
 inline const typename Graphics<T, S>::PointPropertiesVector&
 Graphics<T, S>::pointProperties() const {
     return pointProperties_;
@@ -382,6 +477,12 @@ template<class T, class S>
 inline const typename Graphics<T, S>::LinePropertiesVector&
 Graphics<T, S>::lineProperties() const {
     return lineProperties_;
+}
+
+template<class T, class S>
+inline const typename Graphics<T, S>::TrianglePropertiesVector&
+Graphics<T, S>::triangleProperties() const {
+    return triangleProperties_;
 }
 
 } // namespace graphics

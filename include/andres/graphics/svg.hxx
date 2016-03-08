@@ -1,3 +1,4 @@
+// TODO: implement SVG export of triangles
 #pragma once
 #ifndef ANDRES_GRAPHICS_SVG_HXX
 #define ANDRES_GRAPHICS_SVG_HXX

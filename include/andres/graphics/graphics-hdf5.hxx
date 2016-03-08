@@ -290,7 +290,6 @@ private:
     hid_t type_;
 };
 
-
 template<class T, class S>
 class HDF5Type<andres::graphics::Line<T, S> > {
 private:
@@ -313,6 +312,47 @@ private:
 };
 
 template<class T, class S>
+class HDF5Type<andres::graphics::TriangleProperty<T, S> > {
+private:
+    typedef andres::graphics::TriangleProperty<T, S> TrianglePropertyType;
+
+public:
+    HDF5Type()
+        : type_(H5Tcreate(H5T_COMPOUND, sizeof(TrianglePropertyType)))
+        { H5Tinsert(type_, "visibility", HOFFSET(TrianglePropertyType, visibility_), HDF5Type<andres::graphics::Bit>().type());
+          H5Tinsert(type_, "color", HOFFSET(TrianglePropertyType, color_), HDF5Type<andres::graphics::Color>().type());
+          H5Tinsert(type_, "alpha", HOFFSET(TrianglePropertyType, alpha_), HDF5Type<andres::graphics::Color>().type()); }
+    ~HDF5Type()
+        { H5Tclose(type_); }
+    hid_t type() const
+        { return type_; }
+
+private:
+    hid_t type_;
+};
+
+template<class T, class S>
+class HDF5Type<andres::graphics::Triangle<T, S> > {
+private:
+    typedef T value_type;
+    typedef S size_type;
+    typedef andres::graphics::Triangle<T, S> TriangleType;
+
+public:
+    HDF5Type()
+        : type_(H5Tcreate(H5T_COMPOUND, sizeof(TriangleType)))
+        { H5Tinsert(type_, "point-indices", HOFFSET(TriangleType, pointIndices_), HDF5Type<size_type>().type());
+          H5Tinsert(type_, "property-index", HOFFSET(TriangleType, propertyIndex_), HDF5Type<size_type>().type()); }
+    ~HDF5Type()
+        { H5Tclose(type_); }
+    hid_t type() const
+        { return type_; }
+
+private:
+    hid_t type_;
+};
+
+template<class T, class S>
 void
 save(
     const hid_t parentHandle,
@@ -322,6 +362,8 @@ save(
     save(parentHandle, "points", graphics.points());
     save(parentHandle, "line-properties", graphics.lineProperties());
     save(parentHandle, "lines", graphics.lines());
+    save(parentHandle, "triangle-properties", graphics.triangleProperties());
+    save(parentHandle, "triangles", graphics.triangles());
 }
 
 template<class T, class S>
@@ -337,18 +379,27 @@ load(
     typedef typename GraphicsType::LineType LineType;
     typedef typename GraphicsType::LinesVector LinesVector;
     typedef typename GraphicsType::LinePropertiesVector LinePropertiesVector;
+    typedef typename GraphicsType::TriangleType TriangleType;
+    typedef typename GraphicsType::TrianglesVector TrianglesVector;
+    typedef typename GraphicsType::TrianglePropertiesVector TrianglePropertiesVector;
 
     PointPropertiesVector pointProperties;
     PointsVector points;
     LinePropertiesVector lineProperties;
     LinesVector lines;
+    TrianglePropertiesVector triangleProperties;
+    TrianglesVector triangles;
 
     load(parentHandle, "point-properties", pointProperties);
     load(parentHandle, "points", points);
     load(parentHandle, "line-properties", lineProperties);
     load(parentHandle, "lines", lines);
+    load(parentHandle, "triangle-properties", triangleProperties);
+    load(parentHandle, "triangles", triangles);
 
-    graphics.assign(pointProperties, points, lineProperties, lines);
+    graphics.assign(pointProperties, points,
+        lineProperties, lines,
+        triangleProperties, triangles);
 }
 
 } // namespace hdf5

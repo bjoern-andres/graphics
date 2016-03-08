@@ -13,6 +13,8 @@ typedef Graphics::PointType Point;
 typedef Graphics::PointPropertyType PointProperty;
 typedef Graphics::LineType Line;
 typedef Graphics::LinePropertyType LineProperty;
+typedef Graphics::TriangleType Triangle;
+typedef Graphics::TrianglePropertyType TriangleProperty;
 
 Graphics graphics;
 
@@ -21,6 +23,7 @@ float lineWidth = 1.0f;
 unsigned char colorHorizon[] = {200, 200, 200};
 bool showPoints = true;
 bool showLines = true;
+bool showTriangles = true;
 bool showAxes = true;
 bool showHorizon = true;
 
@@ -28,8 +31,10 @@ void init() {
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    // glDisable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_ZERO, GL_SRC_COLOR);
     glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 }
 
@@ -92,6 +97,22 @@ void display() {
                     glColor4ub(lineProperty.color(0), lineProperty.color(1), lineProperty.color(2), lineProperty.alpha());
                     for(size_type k = 0; k < 2; ++k) {
                         const Point& point = graphics.point(line.pointIndex(k));
+                        glVertex3f(point[0], point[1], point[2]);
+                    }
+                }
+            }
+        glEnd();
+    }
+
+    if(showTriangles) {
+        glBegin(GL_TRIANGLES);
+            for(size_type j = 0; j < graphics.numberOfTriangles(); ++j) {
+                const Triangle& triangle = graphics.triangle(j);
+                const TriangleProperty& triangleProperty = graphics.triangleProperty(triangle.propertyIndex());
+                if(triangleProperty.visibility()) {
+                    glColor4ub(triangleProperty.color(0), triangleProperty.color(1), triangleProperty.color(2), triangleProperty.alpha());
+                    for(size_type k = 0; k < 3; ++k) {
+                        const Point& point = graphics.point(triangle.pointIndex(k));
                         glVertex3f(point[0], point[1], point[2]);
                     }
                 }
